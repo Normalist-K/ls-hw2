@@ -47,8 +47,8 @@ def parse_args(argv=None):
             osp.dirname(__file__), '../data/videos'))
     parser.add_argument(
         '--cnn_dir', default=osp.join(osp.dirname(__file__), '../data/cnn'))
-    parser.add_argument('--pipeline_per_gpu', type=int, default=1)
-    parser.add_argument('--replica_per_gpu', type=int, default=4)
+    parser.add_argument('--pipeline_per_gpu', type=int, default=4)
+    parser.add_argument('--replica_per_gpu', type=int, default=1)
     parser.add_argument('--job_timeout', type=int, default=10)
     parser.add_argument('--debug', action='store_true')
     args = parser.parse_args(argv)
