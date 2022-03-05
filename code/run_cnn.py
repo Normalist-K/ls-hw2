@@ -30,10 +30,11 @@ class ExtractCNNFeature(System):
         cnn_resources = resources + self.gpu_resources.pop(0)
         stages = [
             LoadVideo(io_resources, video_dir=self.args.video_dir),
-            CNNFeature(cnn_resources, model_name='resnet18',
+            CNNFeature(cnn_resources, model_name=self.args.model_name,
                        node_name='avgpool',
                        # Number of parallel workers in the stage
-                       replica_per_gpu=self.args.replica_per_gpu),
+                       replica_per_gpu=self.args.replica_per_gpu,
+                       img_size=self.args.img_size),
             SaveFeature(io_resources, feature_dir=self.args.cnn_dir),
         ]
         return stages
@@ -51,6 +52,8 @@ def parse_args(argv=None):
     parser.add_argument('--replica_per_gpu', type=int, default=1)
     parser.add_argument('--job_timeout', type=int, default=10)
     parser.add_argument('--debug', action='store_true')
+    parser.add_argument('--model_name', type=str, default='efficientnet_b4')
+    parser.add_argument('--img_size', type=int, default=380)
     args = parser.parse_args(argv)
     return args
 

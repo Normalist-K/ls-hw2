@@ -3,6 +3,7 @@ from argparse import ArgumentParser
 import pytorch_lightning as pl
 import torch
 import torch.nn as nn
+from torch.optim import lr_scheduler
 from torchmetrics import Accuracy
 from pytorch_lightning.callbacks.progress import base as progress_base
 
@@ -16,8 +17,12 @@ class MlpClassifier(pl.LightningModule):
             # TODO: define model layers here
             # Input self.hparams.num_features
             # Output self.hparams.num_classes
+            nn.Linear(self.hparams.num_features, 2048, bias=False),
+            nn.BatchNorm1d(2048),
+            nn.GELU(),
+            nn.Dropout(0.2),
+            nn.Linear(2048, self.hparams.num_classes)
         ]
-        raise NotImplementedError
         self.model = nn.Sequential(*layers)
         self.loss = nn.CrossEntropyLoss()
         self.accuracy = Accuracy()
@@ -49,7 +54,17 @@ class MlpClassifier(pl.LightningModule):
         # TODO: define optimizer and optionally learning rate scheduler
         # The simplest form would be `return torch.optim.Adam(...)`
         # For more advanced usages, see https://pytorch-lightning.readthedocs.io/en/latest/common/lightning_module.html#configure-optimizers
-        raise NotImplementedError
+        optimizer = torch.optim.AdamW(self.model.parameters(), lr=self.hparams.learning_rate)
+        scheduler = lr_scheduler.CosineAnnealingLR(optimizer,
+                                                   T_max=self.hparams.scheduler_T_max,
+                                                   eta_min=self.hparams.scheduler_eta_min)
+        return {
+            "optimizer": optimizer,
+            "lr_scheduler": {
+                "scheduler": scheduler, 
+                "interval": "epoch",
+            },
+        }
 
     @classmethod
     def add_argparse_args(cls, parent_parser):
@@ -57,6 +72,6 @@ class MlpClassifier(pl.LightningModule):
         parser.add_argument('--num_features', type=int)
         parser.add_argument('--num_classes', type=int, default=15)
         parser.add_argument('--learning_rate', type=float, default=0.01)
-        parser.add_argument('--scheduler_factor', type=float, default=0.3)
-        parser.add_argument('--scheduler_patience', type=int, default=5)
+        parser.add_argument('--scheduler_T_max', type=int, default=500)
+        parser.add_argument('--scheduler_eta_min', type=float, default=1e-6)
         return parser

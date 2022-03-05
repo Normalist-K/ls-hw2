@@ -1,6 +1,7 @@
 import os
 import os.path as osp
 import pickle
+import numpy as np
 
 from pyturbo import ReorderStage
 
@@ -25,6 +26,8 @@ class SaveFeature(ReorderStage):
         task.start(self)
         feature = task.content
         video_id = task.meta['video_id']
+        # if video_id is None:
+        #     feature = np.zeros(feature.shape)
         frame_id = task.meta.get('frame_id', 0)
         feature_path = osp.join(
             self.feature_dir, f'{video_id}.{self.file_suffix}')

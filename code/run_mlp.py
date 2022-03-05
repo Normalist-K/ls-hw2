@@ -18,7 +18,7 @@ def parse_args(argv=None):
     parser.add_argument('--earlystop_patience', type=int, default=15)
     parser = ArgumentParser(parents=[parser])
     parser.set_defaults(gpus=1, default_root_dir=osp.abspath(
-        osp.join(osp.dirname(__file__), '../data/mlp')))
+        osp.join(osp.dirname(__file__), '/shared/youngkim/dataset/mlp')))
     args = parser.parse_args(argv)
     return args
 

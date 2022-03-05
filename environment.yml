@@ -14,4 +14,5 @@ dependencies:
     - pytorch_lightning>=1.5
     - av>=8.0
     - py-turbo>=0.6
+    - seaborn
 

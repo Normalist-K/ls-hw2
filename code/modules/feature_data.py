@@ -10,12 +10,15 @@ from sklearn.model_selection import train_test_split
 from stages import LoadFeature
 from torch.utils.data import DataLoader, Dataset
 
+from modules.video_sanity_check import video_sanity_check
+
 
 class FeatureDataset(Dataset):
 
-    def __init__(self, df, feature_dir):
+    def __init__(self, df, feature_dir, p2=False):
         self.df = df
         self.feature_dir = feature_dir
+        self.p2 = p2
 
     def __len__(self):
         return len(self.df)
@@ -28,13 +31,19 @@ class FeatureDataset(Dataset):
         Return: [D]
         """
         # TODO: aggregate feature by max or average pooling
-        raise NotImplementedError
+        # print(frame_features.shape)        
+        return np.average(frame_features, axis=0)
 
     def __getitem__(self, idx):
         item = self.df.iloc[idx]
         vid = item['Id']
         label = item.get('Category', None)
         feature_path = osp.join(self.feature_dir, f'{vid}.pkl')
+        if not video_sanity_check(vid):
+            if self.p2:
+                feature_path = osp.join(self.feature_dir, 'OTkzNjg0NTg5ODY2NTMxNzQ0.pkl')
+            else:
+                feature_path = osp.join(self.feature_dir, 'LTgzMTE5MTE0Mjk0NDIwMzAxNzc=.pkl')
         frame_features = np.stack(LoadFeature.load_features(feature_path))
         feature = self.aggregate_frame_features(frame_features)
         feature = torch.as_tensor(feature, dtype=torch.float)

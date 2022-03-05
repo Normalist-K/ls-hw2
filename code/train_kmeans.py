@@ -11,6 +11,7 @@ from pyturbo import process_map
 from sklearn.cluster import KMeans
 
 from stages import LoadFeature
+from modules import video_sanity_check
 
 
 def select_features(features: List[np.ndarray]) -> np.ndarray:
@@ -20,10 +21,16 @@ def select_features(features: List[np.ndarray]) -> np.ndarray:
     Return: selected features, [n x D]
     """
     # TODO: select subset of features for clustering
-    raise NotImplementedError
 
+    selected_features = np.zeros([len(features), features[0].shape[1]])
+    for i in range(len(features)):
+        selected_features[i] = features[i][0]
+    
+    return selected_features
 
 def worker(video_id, *, args):
+    if not video_sanity_check(video_id):
+        return np.zeros([5, 128]) 
     feature_path = osp.join(args.feature_dir, f'{video_id}.pkl')
     features = LoadFeature.load_features(feature_path)
     selected_features = select_features(features)

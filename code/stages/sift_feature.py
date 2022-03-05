@@ -29,7 +29,10 @@ class SIFTFeature(Stage):
         # Extract SIFT feature for the current frame
         # Use self.sift.detectAndCompute
         # Remember to handle when it returns None
-        raise NotImplementedError
+        kp, des = self.sift.detectAndCompute(frame, None)
+        if des is None:
+            des = np.zeros([1, 128])
+        return des
 
     def process(self, task):
         task.start(self)

@@ -4,6 +4,9 @@ import numpy as np
 from pyturbo import Stage, Task
 from torchvision.io import read_video
 
+from modules import video_sanity_check
+
+
 
 class LoadVideo(Stage):
 
@@ -27,12 +30,16 @@ class LoadVideo(Stage):
         """
         # TODO: select a subset of frames, 
         # potentially according to current frame rate
-        raise NotImplementedError
+        
+        return frames[::int(frame_rate*2)]
 
     def process(self, task):
         task.start(self)
         video_id = task.content
-        video_path = osp.join(self.video_dir, f'{video_id}.{self.file_suffix}')
+        if video_sanity_check(video_id):
+            video_path = osp.join(self.video_dir, f'{video_id}.{self.file_suffix}')
+        else:    
+            video_path = osp.join(self.video_dir, f'LTI3ODUwNDg0ODQ3ODU5NjMyMzE=.{self.file_suffix}')
         frames, _, meta = read_video(video_path)
         frames = frames.numpy()
         frame_rate = meta['video_fps']

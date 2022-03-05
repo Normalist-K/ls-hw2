@@ -4,6 +4,8 @@ from pyturbo import Stage
 from torch.backends import cudnn
 from torchvision import models
 from torchvision.models.feature_extraction import create_feature_extractor
+import torchvision.transforms as transforms
+from torchvision.transforms import ToTensor, Normalize, Resize, ToPILImage
 
 
 class CNNFeature(Stage):
@@ -14,10 +16,11 @@ class CNNFeature(Stage):
     """
 
     def allocate_resource(self, resources, *, model_name='resnet18',
-                          node_name='avgpool', replica_per_gpu=1):
+                          node_name='avgpool', replica_per_gpu=1, img_size=224):
         self.model_name = model_name
         self.node_name = node_name
         self.model = None
+        self.img_size = img_size
         gpus = resources.get('gpu')
         self.num_gpus = len(gpus)
         if len(gpus) > 0:
@@ -48,7 +51,20 @@ class CNNFeature(Stage):
         # TODO: extract CNN feature for the frame
         # Use self.model, whose input is [B x C x H x W] in float [0, 1]
         # Recommended to use with torch.no_grad()
-        raise NotImplementedError
+
+        input_transform = transforms.Compose([
+            ToPILImage(),
+            Resize([self.img_size, self.img_size]),
+            ToTensor(),
+            Normalize(mean=(.4914, .4822, .4465), std=(.2023, .1994, .2010)),
+        ])
+        frame = input_transform(frame).unsqueeze(0).to(self.device)
+        
+        with torch.no_grad():
+            feature = self.model(frame)['feature'][0,:,0,0]
+        feature = feature.cpu().numpy()
+
+        return feature
     
     def process(self, task):
         task.start(self)
