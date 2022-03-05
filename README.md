@@ -27,7 +27,7 @@ $ bash sh/cnn_mlp.sh
 ```
 
 ## Part 1 - Validation Result
-see notebook/result.ipynb
+see `notebook/result.ipynb`
 
 ## Part 2
 **Before run below code, you must need to define `BEST_MODEL_PATH` in `sh/part2.sh`**
